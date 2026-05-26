@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>따뜻한 사이버 사서</title>
+    <style>
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            background-color: #fdfaf6; /* 마음이 편안해지는 따뜻한 베이지 톤 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 35px;
+            border-radius: 16px;
+            box-shadow: 0 6px 20px rgba(141, 110, 99, 0.1);
+            width: 480px;
+            text-align: center;
+            border: 1px solid #ede7f6;
+        }
+        h2 {
+            color: #4e342e; /* 차분한 우드/브라운 톤 */
+            margin-bottom: 5px;
+            font-size: 26px;
+        }
+        .subtitle {
+            color: #8d6e63;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 15px;
+            border: 1px solid #d7ccc8;
+            border-radius: 8px;
+            resize: none;
+            box-sizing: border-box;
+            font-size: 15px;
+            background-color: #fafafa;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #8d6e63;
+            background-color: #fff;
+        }
+        button {
+            background-color: #8d6e63;
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: #6d4c41;
+        }
+        .result-box {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            border-left: 5px solid #8d6e63;
+            text-align: left;
+            display: none;
+            line-height: 1.6;
+            font-size: 16px;
+            color: #3e2723;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>따뜻한 사이버 사서</h2>
+    <div class="subtitle">마음을 읽고 책을 건넵니다</div>
+    
+    <textarea id="userInput" placeholder="오늘 어떤 일이 있었나요? 당신의 마음을 들려주세요..."></textarea>
+    <button onclick="processRecommendation()">사서에게 마음 건네기</button>
+
+    <div id="resultBox" class="result-box">
+        <span id="comfortMessage"></span>
+    </div>
+</div>
+
+<script>
+    // 1. 감정 키워드 사전
+    const sentimentDictionary = {
+        '슬픈': ['우울', '힝', '슬프', '힘들', '지치', '눈물', '좌절', '실패', '망쳤', '괴롭', '외롭'],
+        '화나는': ['화', '시발', '짜증', '억울', '화나', '미치', '답답', '스트레스', '열받'],
+        '기쁜': ['행복', '좋다', '기뻐', '기쁘', '즐겁', '신나', '성공', '합격', '좋아', '웃음', '최고'],
+        '설레는': ['설레', '꺄', '기대', '두근', '처음', '시작', '약속', ]
+    };
+
+    // 2. 감정별 도서 데이터베이스
+    const booksDatabase = {
+        '슬픈': [
+            { title: '죽고 싶지만 떡볶이는 먹고 싶어', author: '백세희' },
+            { title: '당신이 옳다', author: '정혜신' },
+            { title: '서른 살이 심리학에게 묻다', author: '김혜남' }
+        ],
+        '화나는': [
+            { title: '미움받을 용기', author: '고가 후미타케, 기시미 이치로' },
+            { title: '화가 풀리면 인생도 풀린다', author: '이종선' }
+        ],
+        '기쁜': [
+            { title: '우리가 빛의 속도로 갈 수 없다면', author: '김초엽' },
+            { title: '모순', author: '양귀자' },
+            { title: '파친코', author: '이민진' }
+        ],
+        '설레는': [
+            { title: '불편한 편의점', author: '김호연' },
+            { title: '어서 오세요, 휴남동 서점입니다', author: '황보름' }
+        ],
+        '평온한': [
+            { title: '코스모스', author: '칼 세이건' },
+            { title: '총, 균, 쇠', author: '재레드 다이아몬드' }
+        ]
+    };
+
+    function processRecommendation() {
+        const text = document.getElementById('userInput').value;
+        if (!text.trim()) {
+            alert('마음을 한 줄이라도 적어주세요!');
+            return;
+        }
+
+        // 3. 감정 분석 점수 계산
+        let sentimentScores = { '슬픈': 0, '화나는': 0, '기쁜': 0, '설레는': 0 };
+        
+        for (let sentiment in sentimentDictionary) {
+            sentimentDictionary[sentiment].forEach(keyword => {
+                if (text.includes(keyword)) {
+                    sentimentScores[sentiment]++;
+                }
+            });
+        }
+
+        // 4. 가장 높은 점수의 감정 추출
+        let bestSentiment = '평온한';
+        let maxScore = 0;
+
+        for (let sentiment in sentimentScores) {
+            if (sentimentScores[sentiment] > maxScore) {
+                maxScore = sentimentScores[sentiment];
+                bestSentiment = sentiment;
+            }
+        }
+
+        // 5. 도서 무작위 추천
+        const books = booksDatabase[bestSentiment];
+        const randomIndex = Math.floor(Math.random() * books.length);
+        const selectedBook = books[randomIndex];
+
+        // 6. 맞춤형 공감 문장 출력 (요청 사항 반영)
+        let message = "";
+        if (bestSentiment === '평온한') {
+            message = `오늘은 특별한 일 없는 <strong>평온한</strong> 하루를 보내셨나 보네요.<br>당신의 잔잔한 시간에 깊이를 더해줄 <strong>'${selectedBook.title}'</strong> (${selectedBook.author} 저) 책을 추천해 드릴게요. 오늘 하루도 좋은 마무리 하세요!`;
+        } else {
+            let punctuation = (bestSentiment === '기쁜' || bestSentiment === '설레는') ? '!' : '...';
+            message = `오늘은 <strong>${bestSentiment}</strong> 일이 있으셨나 보네요${punctuation}<br>당신의 마음에 따뜻한 온기를 채워줄 <strong>'${selectedBook.title}'</strong> (${selectedBook.author} 저) 책을 추천해 드릴게요. 파이팅!`;
+        }
+
+        document.getElementById('comfortMessage').innerHTML = message;
+        document.getElementById('resultBox').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
